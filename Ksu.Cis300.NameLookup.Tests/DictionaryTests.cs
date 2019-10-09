@@ -27,256 +27,195 @@ namespace Ksu.Cis300.NameLookup.Tests
             d.Add(20, "Twenty");
             return d;
         }
+
         /// <summary>
-        /// Tests that a correct exception is thrown when a null key is added.
-        /// A null indicates that no exception was thrown.
+        /// Tests whether the proper exception is thrown when an attempt is made to remove
+        /// a null key.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestAAddNullKey()
+        public void TestARemoveNullKey()
         {
-            Exception ex = null;
+            Exception e = null;
+            Dictionary<string, string> d = new Dictionary<string, string>();
             try
             {
-                Dictionary<string, float> d = new Dictionary<string, float>();
-                d.Add(null, 0);
+                d.Remove(null);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                ex = e;
+                e = ex;
             }
-            Assert.That(ex, Is.Not.Null.And.TypeOf(typeof(ArgumentNullException)));
+            Assert.That(e, Is.Not.Null.And.TypeOf(typeof(ArgumentNullException)));
         }
 
         /// <summary>
-        /// Tests that a correct exception is thrown when a null key is looked up.
-        /// A null indicates that no exception was thrown.
+        /// Tests that removing from an empty dictionary returns false.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestALookUpNullKey()
+        public void TestARemoveFromEmpty()
         {
-            Dictionary<string, double> d = new Dictionary<string, double>();
-            double x;
-            Exception ex = null;
-            try
-            {
-                d.TryGetValue(null, out x);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-            Assert.That(ex, Is.Not.Null.And.TypeOf(typeof(ArgumentNullException)));
+            Dictionary<string, int> d = new Dictionary<string, int>();
+            Assert.That(d.Remove("x"), Is.False);
         }
 
         /// <summary>
-        /// Tests a lookup on an empty dictionary. TryGetValue should return false
-        /// and set its out parameter to null.
+        /// Tests that after adding one key, it can be removed.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestBLookUpEmpty()
-        {
-            Dictionary<int, string> d = new Dictionary<int, string>();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(7, out s), Is.False);
-                Assert.That(s, Is.Null);
-            });
-        }
-
-        /// <summary>
-        /// Adds one key and value, then looks it up.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestCAddOneLookItUp()
+        public void TestBAddOneRemoveIt()
         {
             Dictionary<string, int> d = new Dictionary<string, int>();
             d.Add("one", 1);
-            int i;
+            bool removeResult = d.Remove("one");
+            int v;
+            bool lookupResult = d.TryGetValue("one", out v);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue("one", out i), Is.True);
-                Assert.That(i, Is.EqualTo(1));
+                Assert.That(removeResult, Is.True);
+                Assert.That(lookupResult, Is.False);
             });
         }
 
         /// <summary>
-        /// Tests that the proper exception is thrown if a duplicate key is added.
-        /// A null indicates that no exception was thrown.
+        /// Builds a tree with 7 nodes, removes a leaf, then looks up all 7 keys.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestDAddDuplicate()
-        {
-            Exception ex = null;
-            try
-            {
-                Dictionary<string, int> d = new Dictionary<string, int>();
-                d.Add("two", 2);
-                d.Add("one", 1);
-                d.Add("two", 2);
-            }
-            catch (Exception e)
-            {
-                ex = e;
-            }
-            Assert.That(ex, Is.Not.Null.And.TypeOf(typeof(ArgumentException)));
-        }
-
-        /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// first in the list.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpFirst()
+        public void TestCRemoveLeaf()
         {
             Dictionary<int, string> d = LoadDictionary();
-            string s;
+            bool removeResult = d.Remove(13);
+            d.TryGetValue(3, out string lookup3Result);
+            d.TryGetValue(5, out string lookup5Result);
+            d.TryGetValue(7, out string lookup7Result);
+            d.TryGetValue(10, out string lookup10Result);
+            d.TryGetValue(13, out string lookup13Result);
+            d.TryGetValue(15, out string lookup15Result);
+            d.TryGetValue(20, out string lookup20Result);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue(3, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Three"));
+                Assert.That(removeResult, Is.True);
+                Assert.That(lookup3Result, Is.EqualTo("Three"));
+                Assert.That(lookup5Result, Is.EqualTo("Five"));
+                Assert.That(lookup7Result, Is.EqualTo("Seven"));
+                Assert.That(lookup10Result, Is.EqualTo("Ten"));
+                Assert.That(lookup13Result, Is.Null);
+                Assert.That(lookup15Result, Is.EqualTo("Fifteen"));
+                Assert.That(lookup20Result, Is.EqualTo("Twenty"));
             });
         }
 
         /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// second in the list.
+        /// Builds a tree with 7 nodes, removes a leaf, then its parent, then looks up all 7 keys.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestDLookUpSecond()
+        public void TestDRemoveLeafThenItsParent()
         {
             Dictionary<int, string> d = LoadDictionary();
-            string s;
+            d.Remove(13);
+            bool removeResult = d.Remove(15);
+            d.TryGetValue(3, out string lookup3Result);
+            d.TryGetValue(5, out string lookup5Result);
+            d.TryGetValue(7, out string lookup7Result);
+            d.TryGetValue(10, out string lookup10Result);
+            d.TryGetValue(13, out string lookup13Result);
+            d.TryGetValue(15, out string lookup15Result);
+            d.TryGetValue(20, out string lookup20Result);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue(5, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Five"));
+                Assert.That(removeResult, Is.True);
+                Assert.That(lookup3Result, Is.EqualTo("Three"));
+                Assert.That(lookup5Result, Is.EqualTo("Five"));
+                Assert.That(lookup7Result, Is.EqualTo("Seven"));
+                Assert.That(lookup10Result, Is.EqualTo("Ten"));
+                Assert.That(lookup13Result, Is.Null);
+                Assert.That(lookup15Result, Is.Null);
+                Assert.That(lookup20Result, Is.EqualTo("Twenty"));
             });
         }
 
         /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// third in the list.
+        /// Builds a tree with 7 nodes, removes a leaf, then its parent, then looks up all 7 keys.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestDLookUpThird()
+        public void TestDRemoveOtherLeafThenItsParent()
         {
             Dictionary<int, string> d = LoadDictionary();
-            string s;
+            d.Remove(20);
+            bool removeResult = d.Remove(15);
+            d.TryGetValue(3, out string lookup3Result);
+            d.TryGetValue(5, out string lookup5Result);
+            d.TryGetValue(7, out string lookup7Result);
+            d.TryGetValue(10, out string lookup10Result);
+            d.TryGetValue(13, out string lookup13Result);
+            d.TryGetValue(15, out string lookup15Result);
+            d.TryGetValue(20, out string lookup20Result);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue(7, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Seven"));
+                Assert.That(removeResult, Is.True);
+                Assert.That(lookup3Result, Is.EqualTo("Three"));
+                Assert.That(lookup5Result, Is.EqualTo("Five"));
+                Assert.That(lookup7Result, Is.EqualTo("Seven"));
+                Assert.That(lookup10Result, Is.EqualTo("Ten"));
+                Assert.That(lookup13Result, Is.EqualTo("Thirteen"));
+                Assert.That(lookup15Result, Is.Null);
+                Assert.That(lookup20Result, Is.Null);
             });
         }
 
         /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// fourth in the list.
+        /// Builds a tree with 7 nodes, removes the root, then looks up all 7 keys.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestDLookUpFourth()
+        public void TestERemoveRoot()
         {
             Dictionary<int, string> d = LoadDictionary();
-            string s;
+            bool removeResult = d.Remove(10);
+            d.TryGetValue(3, out string lookup3Result);
+            d.TryGetValue(5, out string lookup5Result);
+            d.TryGetValue(7, out string lookup7Result);
+            d.TryGetValue(10, out string lookup10Result);
+            d.TryGetValue(13, out string lookup13Result);
+            d.TryGetValue(15, out string lookup15Result);
+            d.TryGetValue(20, out string lookup20Result);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue(10, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Ten"));
+                Assert.That(removeResult, Is.True);
+                Assert.That(lookup3Result, Is.EqualTo("Three"));
+                Assert.That(lookup5Result, Is.EqualTo("Five"));
+                Assert.That(lookup7Result, Is.EqualTo("Seven"));
+                Assert.That(lookup10Result, Is.Null);
+                Assert.That(lookup13Result, Is.EqualTo("Thirteen"));
+                Assert.That(lookup15Result, Is.EqualTo("Fifteen"));
+                Assert.That(lookup20Result, Is.EqualTo("Twenty"));
             });
         }
 
         /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// fifth in the list.
+        /// Builds a tree with 7 nodes, tries to remove a key that is not there, then
+        /// looks up all 7 keys.
         /// </summary>
         [Test, Timeout(1000)]
-        public void TestDLookUpFifth()
+        public void TestFRemoveMissing()
         {
             Dictionary<int, string> d = LoadDictionary();
-            string s;
+            bool removeResult = d.Remove(9);
+            d.TryGetValue(3, out string lookup3Result);
+            d.TryGetValue(5, out string lookup5Result);
+            d.TryGetValue(7, out string lookup7Result);
+            d.TryGetValue(10, out string lookup10Result);
+            d.TryGetValue(13, out string lookup13Result);
+            d.TryGetValue(15, out string lookup15Result);
+            d.TryGetValue(20, out string lookup20Result);
             Assert.Multiple(() =>
             {
-                Assert.That(d.TryGetValue(13, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Thirteen"));
-            });
-        }
-
-        /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be
-        /// sixth in the list.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpSixth()
-        {
-            Dictionary<int, string> d = LoadDictionary();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(15, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Fifteen"));
-            });
-        }
-
-        /// <summary>
-        /// Adds seven keys and values, then looks up the one that should be last
-        /// in the list.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpLast()
-        {
-            Dictionary<int, string> d = LoadDictionary();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(20, out s), Is.True);
-                Assert.That(s, Is.EqualTo("Twenty"));
-            });
-        }
-
-        /// <summary>
-        /// Adds seven keys and values, then looks up a key smaller than any in the dictionary.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpSmaller()
-        {
-            Dictionary<int, string> d = LoadDictionary();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(2, out s), Is.False);
-                Assert.That(s, Is.Null);
-            });
-        }
-
-        /// <summary>
-        /// Adds seven keys and values, then looks up a nonexistent key belonging in the
-        /// middle of the list.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpMiddle()
-        {
-            Dictionary<int, string> d = LoadDictionary();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(12, out s), Is.False);
-                Assert.That(s, Is.Null);
-            });
-        }
-
-        /// <summary>
-        /// Adds five keys and values, then looks up a key larger than any in the dictionary.
-        /// </summary>
-        [Test, Timeout(1000)]
-        public void TestDLookUpGreater()
-        {
-            Dictionary<int, string> d = LoadDictionary();
-            string s;
-            Assert.Multiple(() =>
-            {
-                Assert.That(d.TryGetValue(25, out s), Is.False);
-                Assert.That(s, Is.Null);
+                Assert.That(removeResult, Is.False);
+                Assert.That(lookup3Result, Is.EqualTo("Three"));
+                Assert.That(lookup5Result, Is.EqualTo("Five"));
+                Assert.That(lookup7Result, Is.EqualTo("Seven"));
+                Assert.That(lookup10Result, Is.EqualTo("Ten"));
+                Assert.That(lookup13Result, Is.EqualTo("Thirteen"));
+                Assert.That(lookup15Result, Is.EqualTo("Fifteen"));
+                Assert.That(lookup20Result, Is.EqualTo("Twenty"));
             });
         }
     }
